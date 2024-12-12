@@ -3,6 +3,7 @@ package tugas.c14220066.belajarroom
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -16,6 +17,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import tugas.c14220066.belajarroom.database.daftarBelanja
 import tugas.c14220066.belajarroom.database.daftarBelanjaDB
+import tugas.c14220066.belajarroom.database.historyBelanja
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,6 +45,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, TambahDaftar::class.java))
         }
 
+        val _btnhistory = findViewById<Button>(R.id.btnHistory)
+        _btnhistory.setOnClickListener {
+            startActivity(Intent(this, History::class.java))
+        }
+
         adapterDaftar = adapterDaftar(arDaftar)
         val _rvDafBlanja = findViewById<RecyclerView>(R.id.rvDafBlanja)
         _rvDafBlanja.layoutManager = LinearLayoutManager(this)
@@ -57,6 +64,15 @@ class MainActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             adapterDaftar.isiData(daftar)
                         }
+                    }
+                }
+
+                override fun selesai(dtBelanja: daftarBelanja) {
+                    CoroutineScope(Dispatchers.IO).async {
+                        val history = historyBelanja(dtBelanja.id, dtBelanja.tanggal,
+                            dtBelanja.item, dtBelanja.jumlah, dtBelanja.status)
+                        DB.funhistoryBelanjaDAO().insert(history)
+                        delData(dtBelanja)
                     }
                 }
 
